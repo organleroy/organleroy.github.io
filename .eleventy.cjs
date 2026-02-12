@@ -7,9 +7,22 @@ module.exports = function (eleventyConfig) {
 
   // Nunjucks date filter used by base.njk
   eleventyConfig.addFilter("date", (value, format = "YYYY") => {
-    const d = value ? new Date(value) : new Date();
+    // Accept Date objects, strings, or numbers; fall back safely.
+    let d;
+
+    if (value instanceof Date) {
+      d = value;
+    } else if (typeof value === "string" || typeof value === "number") {
+      d = new Date(value);
+    } else {
+      d = new Date();
+    }
+
+    if (Number.isNaN(d.getTime())) {
+      d = new Date(); // final fallback
+    }
+
     if (format === "YYYY") return String(d.getFullYear());
-    // fallback: ISO date
     return d.toISOString().slice(0, 10);
   });
 

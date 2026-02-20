@@ -38,50 +38,111 @@ permalink: /about/
         </div>
 
         <form
-          class="contact-form"
-          action="https://script.google.com/macros/s/AKfycbzf-f79d7t2UwY0Y9IGqpkOb6WBYCuaH5N_L_I08_t4Wq4DMGyt3pdLpwPoXN9IqXMycA/exec"
-          method="POST"
-          target="hidden_iframe"
-          onsubmit="setTimeout(function(){ window.location='/thanks/'; }, 400);"
-        >
+  class="contact-form"
+  id="contactForm"
+  action="https://script.google.com/macros/s/AKfycbzf-f79d7t2UwY0Y9IGqpkOb6WBYCuaH5N_L_I08_t4Wq4DMGyt3pdLpwPoXN9IqXMycA/exec"
+  method="POST"
+  novalidate
+>
+  <p class="form-row">
+    <label class="form-label">
+      Name
+      <input class="form-field" type="text" name="name" required>
+    </label>
+  </p>
 
-          <!-- REQUIRED FOR SILENT SUBMIT -->
-          <iframe name="hidden_iframe" style="display:none;"></iframe>
+  <!-- HONEYPOT (ANTI-SPAM) -->
+  <p class="hp-field">
+    <label class="form-label">
+      Company
+      <input class="form-field" type="text" name="company" tabindex="-1" autocomplete="off">
+    </label>
+  </p>
 
-          <p class="form-row">
-            <label class="form-label">
-              Name
-              <input class="form-field" type="text" name="name" required>
-            </label>
-          </p>
+  <p class="form-row">
+    <label class="form-label">
+      Email
+      <input class="form-field" type="email" name="email" required>
+    </label>
+  </p>
 
-          <!-- HONEYPOT (ANTI-SPAM) -->
-          <p class="hp-field">
-            <label class="form-label">
-              Company
-              <input class="form-field" type="text" name="company" tabindex="-1" autocomplete="off">
-            </label>
-          </p>
+  <p class="form-row">
+    <label class="form-label">
+      Message
+      <textarea class="form-field form-textarea" name="message" rows="6" required></textarea>
+    </label>
+  </p>
 
-          <p class="form-row">
-            <label class="form-label">
-              Email
-              <input class="form-field" type="email" name="email" required>
-            </label>
-          </p>
+  <!-- Status message area (keeps layout stable) -->
+  <p class="form-row" id="contactStatus" aria-live="polite" style="display:none;"></p>
 
-          <p class="form-row">
-            <label class="form-label">
-              Message
-              <textarea class="form-field form-textarea" name="message" rows="6" required></textarea>
-            </label>
-          </p>
+  <p class="form-row form-actions">
+    <button class="form-button" type="submit" id="contactSubmit">Send</button>
+  </p>
+</form>
 
-          <p class="form-row form-actions">
-            <button class="form-button" type="submit">Send</button>
-          </p>
+<script>
+  (function () {
+    const form = document.getElementById("contactForm");
+    const statusEl = document.getElementById("contactStatus");
+    const submitBtn = document.getElementById("contactSubmit");
 
-        </form>
+    function showStatus(msg) {
+      statusEl.textContent = msg;
+      statusEl.style.display = "block";
+    }
+
+    form.addEventListener("submit", async function (ev) {
+      ev.preventDefault();
+
+      // Let the browser report missing required fields nicely.
+      // (We used novalidate to control the flow; reportValidity() still uses native UI.)
+      if (!form.reportValidity()) return;
+
+      // Disable button to prevent double submits
+      submitBtn.disabled = true;
+      submitBtn.setAttribute("aria-busy", "true");
+
+      try {
+        const formData = new FormData(form);
+
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new URLSearchParams(formData),
+          // Apps Script is cross-origin; this tells fetch to follow normal CORS rules.
+          mode: "cors",
+        });
+
+        // If the browser can't read the response for any reason, res.ok may still be false.
+        // We'll try to parse JSON, but fall back gracefully.
+        let data = null;
+        try {
+          data = await res.json();
+        } catch (e) {
+          // ignore parse errors
+        }
+
+        if (res.ok && data && data.ok === true) {
+          // Success → go to thanks page
+          window.location.href = "/thanks/";
+          return;
+        }
+
+        // Known validation failure from backend
+        if (data && data.ok === false && data.error) {
+          showStatus(data.error);
+        } else {
+          showStatus("Sorry—something went wrong sending your message. Please try again.");
+        }
+      } catch (err) {
+        showStatus("Sorry—something went wrong sending your message. Please try again.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.removeAttribute("aria-busy");
+      }
+    });
+  })();
+</script>
 
       </div>
 

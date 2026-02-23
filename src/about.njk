@@ -100,8 +100,11 @@ permalink: /about/
       if (!form.reportValidity()) return;
 
       // Disable button to prevent double submits
-      submitBtn.disabled = true;
-      submitBtn.setAttribute("aria-busy", "true");
+      const originalLabel = submitBtn.textContent;
+
+submitBtn.disabled = true;
+submitBtn.setAttribute("aria-busy", "true");
+submitBtn.textContent = "Sending…";
 
       try {
         const formData = new FormData(form);
@@ -137,8 +140,9 @@ permalink: /about/
       } catch (err) {
         showStatus("Sorry—something went wrong sending your message. Please try again.");
       } finally {
-        submitBtn.disabled = false;
-        submitBtn.removeAttribute("aria-busy");
+       submitBtn.disabled = false;
+submitBtn.removeAttribute("aria-busy");
+submitBtn.textContent = originalLabel;
       }
     });
   })();

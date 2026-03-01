@@ -8,6 +8,72 @@ This is not a commit log.
 
 ---
 
+## 2026-02-23 — SEO, Indexing, Analytics & Identity Hardening
+
+This phase addressed post-migration discovery, indexing, analytics continuity,
+and identity disambiguation issues following the WordPress → Eleventy transition.
+
+### Search discovery & indexing recovery
+- Identified that several flagship work pages were **“URL unknown to Google”** in Search Console.
+- Root cause: removal of WordPress discovery surfaces (feeds, archives, search) combined with a large visual grid.
+- Resolution:
+  - Added a **data-driven sitemap** (`/sitemap.xml`) generated directly from `projects.json`.
+  - Sitemap intentionally excludes:
+    - `/404`
+    - `/thanks`
+  - Sitemap lists:
+    - Homepage
+    - About page
+    - All `/work/<slug>/` pages (authoritative source of truth).
+- Submitted sitemap in Google Search Console.
+- Selectively used **“Request indexing”** for a small set of flagship pages (Snickers, Streets For All, etc.).
+- Result:
+  - Previously “unknown” pages became **indexed and eligible for enhancements**.
+  - Index coverage stabilized and future discovery is automatic.
+
+### Canonicalization & duplicate handling
+- Implemented a **sitewide canonical tag** in `src/_includes/base.njk`:
+  - `https://russellbates.com{{ page.url }}`
+- Resolved Search Console reports of:
+  - “Duplicate without user-selected canonical”
+  - junk query-string URLs inherited from legacy WordPress and external scrapers.
+- Canonicals now consistently point to clean, parameter-free URLs.
+
+### Structured data & identity disambiguation
+- Added sitewide **JSON-LD `Person` structured data** to the base layout.
+- Explicitly included:
+  - `disambiguatingDescription` clarifying *not* the sci-fi writer Russell Bates (1941–2018).
+  - `sameAs` link to the correct IMDb profile.
+- Purpose:
+  - Prevent Google Knowledge Panel conflation.
+  - Reinforce correct identity for search, panels, and rich results.
+
+### Video indexing observations (intentional)
+- Confirmed that all work pages correctly expose video content:
+  - “Videos: 1 valid item detected”.
+- Observed that some pages index the video as a standalone asset and others do not.
+- Determined this is **expected Google behavior**:
+  - Page-level indexing is the primary goal.
+  - No corrective action required.
+
+### Analytics continuity
+- Verified and reactivated existing **GA4 property** for russellbates.com.
+- Installed GA4 sitewide in `src/_includes/base.njk`.
+- Linked **Search Console ↔ GA4** for shared reporting.
+- Confirmed real-time traffic visibility.
+
+### Contact form backend hardening
+- Restored and stabilized Google Apps Script backend after experimental edits.
+- Final behavior:
+  - POST submissions write to Google Sheet (`Contact Responses`).
+  - Honeypot (`company`) silently discards spam.
+  - Successful submissions trigger **email notification** via `MailApp.sendEmail`.
+  - Submission failure in email does **not** block data capture.
+- Important operational note:
+  - Script edits require **Deploy → New version** to take effect.
+
+---
+
 ## 2026-02-17 — Eleventy Site Live + Deployment Canonicalized
 
 ### Canonical site & hosting

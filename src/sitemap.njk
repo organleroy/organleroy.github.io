@@ -1,0 +1,29 @@
+---
+permalink: /sitemap.xml
+eleventyExcludeFromCollections: true
+---
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://russellbates.com/</loc>
+  </url>
+
+  <url>
+    <loc>https://russellbates.com/about/</loc>
+  </url>
+
+  {# Exclude /thanks/ from sitemap on purpose #}
+
+  {# Work pages from projects data #}
+  {%- if projects and projects.length -%}
+    {%- for p in projects -%}
+      {%- if p.slug -%}
+  <url>
+    <loc>https://russellbates.com/work/{{ p.slug }}/</loc>
+  </url>
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+</urlset>
